@@ -1,0 +1,66 @@
+services:
+  mysql-backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: m2_mysql_backup
+    restart: unless-stopped
+    networks:
+      - docker_m2_network
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - /opt/m2-deployment/backups/mysql:/backup-storage
+      - mysql_backup_data:/backups
+      - mysql_backup_logs:/var/log/backup
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS}
+      - BACKUP_COMPRESSION=${BACKUP_COMPRESSION}
+      - BACKUP_TYPE=${BACKUP_TYPE}
+      - BACKUP_SINGLE_TRANSACTION=${BACKUP_SINGLE_TRANSACTION}
+      - BACKUP_ROUTINES=${BACKUP_ROUTINES}
+      - BACKUP_TRIGGERS=${BACKUP_TRIGGERS}
+      - BACKUP_EVENTS=${BACKUP_EVENTS}
+      - CREATE_INITIAL_BACKUP=${CREATE_INITIAL_BACKUP}
+      - ENABLE_MONITORING=${ENABLE_MONITORING}
+      - MONITOR_INTERVAL=${MONITOR_INTERVAL}
+      - MAX_BACKUP_AGE_HOURS=${MAX_BACKUP_AGE_HOURS}
+      - GOOGLE_DRIVE_ENABLED=${GOOGLE_DRIVE_ENABLED}
+      - GOOGLE_DRIVE_CLIENT_ID=${GOOGLE_DRIVE_CLIENT_ID}
+      - GOOGLE_DRIVE_CLIENT_SECRET=${GOOGLE_DRIVE_CLIENT_SECRET}
+      - GOOGLE_DRIVE_REFRESH_TOKEN=${GOOGLE_DRIVE_REFRESH_TOKEN}
+      - GOOGLE_DRIVE_FOLDER_ID=${GOOGLE_DRIVE_FOLDER_ID}
+      - TG_BOT_TOKEN=${TG_BOT_TOKEN}
+      - TG_CHAT_ID=${TG_CHAT_ID}
+      - TELEGRAM_BOT_TOKEN=${TG_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TG_CHAT_ID}
+      - BACKUP_WEBHOOK_URL=${BACKUP_WEBHOOK_URL}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - BACKUP_PREFIX=${BACKUP_PREFIX}
+      - REMOTE_MYSQL_HOST=${REMOTE_MYSQL_HOST}
+      - REMOTE_MYSQL_PORT=${REMOTE_MYSQL_PORT}
+      - REMOTE_MYSQL_USER=${REMOTE_MYSQL_USER}
+      - REMOTE_MYSQL_PASSWORD=${REMOTE_MYSQL_PASSWORD}
+      - REMOTE_MYSQL_DATABASE=${REMOTE_MYSQL_DATABASE}
+    entrypoint: ["/app/scripts/entrypoint.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "/app/scripts/health-check.sh"]
+      interval: 5m
+      timeout: 30s
+      retries: 3
+
+networks:
+  docker_m2_network:
+    external: true
+
+volumes:
+  mysql_backup_data:
+    driver: local
+  mysql_backup_logs:
+    driver: local

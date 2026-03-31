@@ -1,0 +1,11 @@
+# InfluxDB Backup Schedule
+# Формат: минута час день месяц день_недели команда
+
+# Ежедневный бэкап в 2:00
+0 2 * * * /app/scripts/backup.sh >> /var/log/backup/cron.log 2>&1
+
+# Еженедельный полный бэкап в воскресенье в 1:00
+0 1 * * 0 BACKUP_TYPE=full /app/scripts/backup.sh >> /var/log/backup/cron.log 2>&1
+
+# Проверка состояния каждые 6 часов
+0 */6 * * * /app/scripts/health-check.sh >> /var/log/backup/health.log 2>&1

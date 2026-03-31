@@ -1,0 +1,46 @@
+services:
+  influxdb-backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: m2_influxdb_backup
+    restart: unless-stopped
+    networks:
+      - docker_m2_network
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - influxdb_backups:/backups
+      - backup_storage:/backup-storage
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - BACKUP_PREFIX=${BACKUP_PREFIX:-backup}
+      - INFLUXDB_HOST=m2_influxdb
+      - INFLUXDB_PORT=8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG_NAME}
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - BACKUP_COMPRESSION=${BACKUP_COMPRESSION:-true}
+      - GOOGLE_DRIVE_ENABLED=${GOOGLE_DRIVE_ENABLED:-false}
+      - GOOGLE_DRIVE_CLIENT_ID=${GOOGLE_DRIVE_CLIENT_ID:-}
+      - GOOGLE_DRIVE_CLIENT_SECRET=${GOOGLE_DRIVE_CLIENT_SECRET:-}
+      - GOOGLE_DRIVE_REFRESH_TOKEN=${GOOGLE_DRIVE_REFRESH_TOKEN:-}
+      - GOOGLE_DRIVE_FOLDER_ID=${GOOGLE_DRIVE_FOLDER_ID:-}
+      - TELEGRAM_BOT_TOKEN=${TG_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TG_CHAT_ID:-}
+
+networks:
+  docker_m2_network:
+    external: true
+
+volumes:
+  influxdb_backups:
+    external: true
+    name: docker_influxdb_backups
+  backup_storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/m2-deployment/backups/influxdb
